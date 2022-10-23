@@ -1,7 +1,26 @@
 package app
 
-import "github.com/luizmoitinho/bookstore_users_api/controllers"
+import (
+	"github.com/gin-gonic/gin"
+	ping "github.com/luizmoitinho/bookstore_users_api/controllers/ping"
+	users "github.com/luizmoitinho/bookstore_users_api/controllers/users"
+)
 
-func mapRoutes() {
-	router.GET("/ping", controllers.Ping)
+type GinRouter struct {
+	engine *gin.Engine
+}
+
+func (g *GinRouter) Init() {
+	g.engine = gin.Default()
+}
+
+func (g *GinRouter) Run(address string) {
+	g.engine.Run(address)
+}
+
+func (g *GinRouter) MapRoutes() {
+	g.engine.GET("/ping", ping.Ping)
+
+	g.engine.GET("/users/:user_id", users.GetUser)
+	g.engine.POST("/users", users.CreateUser)
 }
