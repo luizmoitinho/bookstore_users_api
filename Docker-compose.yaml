@@ -1,0 +1,40 @@
+version: '3.3'
+
+services:
+
+  mysql_db:
+    container_name: bookstore_users_mysql
+    image: mysql
+    restart: always
+    env_file: .env
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASS}
+      MYSQL_DATABASE: ${DB_NAME}
+    ports:
+      - 3306:3306
+    expose:
+      - 3306
+    volumes:
+      - my-db:/var/lib/mysql
+
+  # app:
+  #   container_name: bookstore_users_api
+  #   tty: true
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   env_file: .env
+  #   depends_on:
+  #     - mysql_db
+  #   networks:
+  #     - mysql-network
+  #   ports:
+  #     - 8080:8080
+
+
+volumes:
+  my-db:
+
+networks:
+  mysql-network:
+    driver: bridge
