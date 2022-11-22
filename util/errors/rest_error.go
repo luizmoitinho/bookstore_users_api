@@ -11,7 +11,7 @@ type RestError struct {
 func NewBadRequestError(message string) *RestError {
 	return &RestError{
 		Message: message,
-		Status:  http.StatusBadGateway,
+		Status:  http.StatusBadRequest,
 		Error:   "bad_request",
 	}
 }
@@ -21,5 +21,13 @@ func NewNotFoundError(message string) *RestError {
 		Message: message,
 		Status:  http.StatusNotFound,
 		Error:   "not_found",
+	}
+}
+
+func NewInternalServerError(message string) *RestError {
+	return &RestError{
+		Message: message,
+		Status:  http.StatusInternalServerError,
+		Error:   "internal_server_error",
 	}
 }
