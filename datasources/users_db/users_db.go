@@ -14,14 +14,14 @@ const (
 )
 
 type MySQL struct {
-	DB *sql.DB
+	Client *sql.DB
 }
 
 func Connect() MySQL {
 	var err error
 	var _mysql = MySQL{}
 
-	_mysql.DB, err = sql.Open("mysql", fmt.Sprintf(
+	_mysql.Client, err = sql.Open("mysql", fmt.Sprintf(
 		DATASOURCE_NAME,
 		config.Propertie.DATABASE.USER,
 		config.Propertie.DATABASE.PASS,
@@ -34,7 +34,7 @@ func Connect() MySQL {
 		panic(err)
 	}
 
-	if err = _mysql.DB.Ping(); err != nil {
+	if err = _mysql.Client.Ping(); err != nil {
 		panic(err)
 	}
 
