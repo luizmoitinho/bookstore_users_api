@@ -11,10 +11,12 @@ import (
 var Propertie Properties
 
 type Properties struct {
-	ENV       string
-	CONTAINER bool
-	PORT      int
-	DATABASE  DataBase
+	ENV         string
+	CONTAINER   bool
+	PORT        int
+	LOCATION    string
+	DATE_LAYOUT string
+	DATABASE    DataBase
 }
 
 type DataBase struct {
@@ -33,6 +35,8 @@ func Load(path string) {
 		log.Fatal("config.Load(): ", err)
 	}
 
+	Propertie.DATE_LAYOUT = os.Getenv("DATE_LAYOUT")
+	Propertie.LOCATION = os.Getenv("LOCATION")
 	Propertie.ENV = os.Getenv("ENV")
 	if Propertie.PORT, err = strconv.Atoi(os.Getenv("PORT")); err != nil {
 		Propertie.PORT = 8080
