@@ -10,29 +10,31 @@ import (
 )
 
 const (
-	UNIQUE_EMAIL = "users.UC_user_email"
+	NO_ROWS_RESULT_SET = "no rows in result set"
+	UNIQUE_USER_EMAIL  = "users.UC_user_email"
 
-	QUERY_INSERT = "INSERT INTO users (first_name, last_name, email, created_at) VALUES (?,?,?,?);"
+	QUERY_INSERT_USER = "INSERT INTO users (first_name, last_name, email, created_at) VALUES (?,?,?,?);"
+	QUERY_GET_USER    = "SELECT id, first_name, last_name, email, created_at FROM users WHERE id=?;"
 )
 
 var usersDB = make(map[int64]*UserDTO)
 
 func (user *UserDTO) Get() *errors.RestError {
-	con := users_db.Connect()
-	if err := con.Client.Ping(); err != nil {
-		panic(err)
-	}
+	conn := users_db.Connect()
 
-	result := usersDB[user.Id]
-	if result == nil {
-		return errors.NewNotFoundError(fmt.Sprintf("user %d not found", user.Id))
+	stm, err := conn.Client.Prepare(QUERY_GET_USER)
+	if err != nil {
+		return errors.NewInternalServerError(err.Error())
 	}
+	defer stm.Close()
 
-	user.Id = result.Id
-	user.FirstName = result.FirstName
-	user.LastName = result.LastName
-	user.Email = result.Email
-	user.CreatedAt = result.CreatedAt
+	result := stm.QueryRow(user.Id)
+	if err := result.Scan(&user.Id, &user.FirstName, &user.LastName, &user.Email, &user.CreatedAt); err != nil {
+		if strings.Contains(err.Error(), NO_ROWS_RESULT_SET) {
+			return errors.NewNotFoundError(fmt.Sprintf("user %d not found", user.Id))
+		}
+		return errors.NewInternalServerError(fmt.Sprintf("error trying get user %v: %v", user.Id, err.Error()))
+	}
 
 	return nil
 }
@@ -40,7 +42,7 @@ func (user *UserDTO) Get() *errors.RestError {
 func (user *UserDTO) Save() *errors.RestError {
 	conn := users_db.Connect()
 
-	stm, err := conn.Client.Prepare(QUERY_INSERT)
+	stm, err := conn.Client.Prepare(QUERY_INSERT_USER)
 	if err != nil {
 		return errors.NewInternalServerError(err.Error())
 	}
@@ -49,7 +51,7 @@ func (user *UserDTO) Save() *errors.RestError {
 	user.CreatedAt = date_utils.GetNowString()
 	result, err := stm.Exec(user.FirstName, user.LastName, user.Email, user.CreatedAt)
 	if err != nil {
-		if strings.Contains(err.Error(), UNIQUE_EMAIL) {
+		if strings.Contains(err.Error(), UNIQUE_USER_EMAIL) {
 			return errors.NewBadRequestError(fmt.Sprintf("email %v already exists", user.Email))
 		}
 		return errors.NewInternalServerError(fmt.Sprintf("error whe trying save user: %v", err.Error()))
