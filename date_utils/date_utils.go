@@ -1,15 +1,16 @@
 package date_utils
 
-import "time"
+import (
+	"time"
 
-const (
-	API_DATE_LAYOUT = "2006-01-02T15:04:05Z"
+	"github.com/luizmoitinho/bookstore_users_api/config"
 )
 
 func GetNow() time.Time {
-	return time.Now().UTC()
+	loc, _ := time.LoadLocation(config.Propertie.LOCATION)
+	return time.Now().In(loc)
 }
 
 func GetNowString() string {
-	return GetNow().Format(API_DATE_LAYOUT)
+	return GetNow().Format(config.Propertie.DATE_LAYOUT)
 }
