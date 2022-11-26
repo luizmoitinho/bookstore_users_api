@@ -16,7 +16,10 @@ type UserDTO struct {
 }
 
 func (u *UserDTO) TreatmentAndValidate() *errors.RestError {
+	u.FirstName = strings.TrimSpace(u.FirstName)
+	u.LastName = strings.TrimSpace(u.LastName)
 	u.Email = strings.TrimSpace(strings.ToLower(u.Email))
+
 	if u.Email == "" {
 		return errors.NewBadRequestError("email address not be empty")
 	} else if !ValidEmail(u.Email) {

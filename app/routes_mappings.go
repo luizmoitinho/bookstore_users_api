@@ -23,4 +23,7 @@ func (g *GinRouter) MapRoutes() {
 
 	g.engine.GET("/users/:user_id", users.GetUser)
 	g.engine.POST("/users", users.CreateUser)
+	g.engine.PUT("/users/:user_id", users.UpdateUser)
+	g.engine.PATCH("/users/:user_id", users.UpdateUser)
+
 }

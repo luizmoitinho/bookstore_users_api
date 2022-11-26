@@ -13,6 +13,39 @@ func GetUser(userId int64) (*users.UserDTO, *errors.RestError) {
 	return result, nil
 }
 
+func UpdateUser(isPartial bool, user users.UserDTO) (*users.UserDTO, *errors.RestError) {
+	currentUser, err := GetUser(user.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := currentUser.TreatmentAndValidate(); err != nil {
+		return nil, err
+	}
+
+	if isPartial {
+		if user.FirstName != "" {
+			currentUser.FirstName = user.FirstName
+		}
+		if user.LastName != "" {
+			currentUser.LastName = user.LastName
+		}
+		if user.Email != "" {
+			currentUser.Email = user.Email
+		}
+	} else {
+		currentUser.FirstName = user.FirstName
+		currentUser.LastName = user.LastName
+		currentUser.Email = user.Email
+	}
+
+	if err := currentUser.Update(); err != nil {
+		return nil, err
+	}
+
+	return currentUser, nil
+}
+
 func CreateUser(user users.UserDTO) (*users.UserDTO, *errors.RestError) {
 	if err := user.TreatmentAndValidate(); err != nil {
 		return nil, err
