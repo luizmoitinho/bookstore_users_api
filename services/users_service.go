@@ -13,6 +13,11 @@ func GetUser(userId int64) (*users.UserDTO, *errors.RestError) {
 	return result, nil
 }
 
+func DeleteUser(userId int64) *errors.RestError {
+	user := &users.UserDTO{Id: userId}
+	return user.Delete()
+}
+
 func UpdateUser(isPartial bool, user users.UserDTO) (*users.UserDTO, *errors.RestError) {
 	currentUser, err := GetUser(user.Id)
 	if err != nil {

@@ -10,7 +10,7 @@ import (
 	"github.com/luizmoitinho/bookstore_users_api/util/errors"
 )
 
-func GetUser(c *gin.Context) {
+func Get(c *gin.Context) {
 	userId, err := getUserIdParams(c)
 	if err != nil {
 		c.JSON(err.Status, err)
@@ -26,7 +26,21 @@ func GetUser(c *gin.Context) {
 	c.JSON(http.StatusOK, result)
 }
 
-func UpdateUser(c *gin.Context) {
+func Delete(c *gin.Context) {
+	userId, err := getUserIdParams(c)
+	if err != nil {
+		c.JSON(err.Status, err)
+	}
+
+	if errDelete := services.DeleteUser(userId); errDelete != nil {
+		c.JSON(errDelete.Status, errDelete)
+		return
+	}
+
+	c.JSON(http.StatusOK, map[string]string{"status": "deleted"})
+}
+
+func Update(c *gin.Context) {
 	isPartial := c.Request.Method == http.MethodPatch
 
 	userId, err := getUserIdParams(c)
@@ -62,7 +76,7 @@ func UpdateUser(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, result)
+	c.JSON(http.StatusOK, result)
 }
 
 func getUserIdParams(c *gin.Context) (int64, *errors.RestError) {
@@ -75,7 +89,7 @@ func getUserIdParams(c *gin.Context) (int64, *errors.RestError) {
 	return userId, nil
 }
 
-func CreateUser(c *gin.Context) {
+func Create(c *gin.Context) {
 	var user users.UserDTO
 	if err := c.ShouldBindJSON(&user); err != nil {
 		restErr := errors.NewBadRequestError("invalid json body")
