@@ -11,6 +11,10 @@ func GetNow() time.Time {
 	return time.Now().In(loc)
 }
 
-func GetNowString() string {
-	return GetNow().Format(config.Propertie.DATE_LAYOUT)
+func GetNowApiFormat() string {
+	return GetNow().Format(config.Propertie.API_DATE_LAYOUT)
+}
+
+func GetNowDbFormat() string {
+	return GetNow().Format(config.Propertie.DB_DATE_LAYOUT)
 }

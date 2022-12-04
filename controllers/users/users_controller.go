@@ -3,10 +3,12 @@ package controllers
 import (
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/luizmoitinho/bookstore_users_api/domain/users"
 	"github.com/luizmoitinho/bookstore_users_api/services"
+	"github.com/luizmoitinho/bookstore_users_api/util/date_utils"
 	"github.com/luizmoitinho/bookstore_users_api/util/errors"
 )
 
@@ -24,6 +26,24 @@ func Get(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, result)
+}
+
+func Search(c *gin.Context) {
+	status := c.Query("status")
+	if strings.TrimSpace(status) == "" {
+		err := errors.NewBadRequestError("status parameter is not valid")
+		c.JSON(err.Status, err)
+		return
+	}
+
+	users, err := services.Search(status)
+	if err != nil {
+		c.JSON(err.Status, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, users)
+
 }
 
 func Delete(c *gin.Context) {
@@ -96,6 +116,9 @@ func Create(c *gin.Context) {
 		c.JSON(restErr.Status, restErr)
 		return
 	}
+
+	user.Status = users.STATUS_ACTIVE
+	user.CreatedAt = date_utils.GetNowDbFormat()
 	result, saveErr := services.CreateUser(user)
 	if saveErr != nil {
 		c.JSON(saveErr.Status, saveErr)

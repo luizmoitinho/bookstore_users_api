@@ -27,4 +27,6 @@ func (g *GinRouter) MapRoutes() {
 	g.engine.PATCH("/users/:user_id", users.Update)
 	g.engine.DELETE("users/:user_id", users.Delete)
 
+	g.engine.GET("/internal/users/search", users.Search)
+
 }
