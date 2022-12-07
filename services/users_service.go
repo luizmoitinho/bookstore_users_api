@@ -5,7 +5,21 @@ import (
 	"github.com/luizmoitinho/bookstore_users_api/util/errors"
 )
 
-func GetUser(userId int64) (*users.UserDTO, *errors.RestError) {
+var (
+	UsersService usersServiceInterface = &usersService{}
+)
+
+type usersService struct{}
+
+type usersServiceInterface interface {
+	GetUser(int64) (*users.UserDTO, *errors.RestError)
+	SearchUser(string) (users.Users, *errors.RestError)
+	DeleteUser(int64) *errors.RestError
+	UpdateUser(bool, users.UserDTO) (*users.UserDTO, *errors.RestError)
+	CreateUser(users.UserDTO) (*users.UserDTO, *errors.RestError)
+}
+
+func (s *usersService) GetUser(userId int64) (*users.UserDTO, *errors.RestError) {
 	result := &users.UserDTO{Id: userId}
 	if err := result.Get(); err != nil {
 		return nil, err
@@ -13,18 +27,18 @@ func GetUser(userId int64) (*users.UserDTO, *errors.RestError) {
 	return result, nil
 }
 
-func Search(status string) (users.Users, *errors.RestError) {
+func (s *usersService) SearchUser(status string) (users.Users, *errors.RestError) {
 	user := users.UserDTO{}
 	return user.FindByStatus(status)
 }
 
-func DeleteUser(userId int64) *errors.RestError {
+func (s *usersService) DeleteUser(userId int64) *errors.RestError {
 	user := &users.UserDTO{Id: userId}
 	return user.Delete()
 }
 
-func UpdateUser(isPartial bool, user users.UserDTO) (*users.UserDTO, *errors.RestError) {
-	currentUser, err := GetUser(user.Id)
+func (s *usersService) UpdateUser(isPartial bool, user users.UserDTO) (*users.UserDTO, *errors.RestError) {
+	currentUser, err := s.GetUser(user.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +70,7 @@ func UpdateUser(isPartial bool, user users.UserDTO) (*users.UserDTO, *errors.Res
 	return currentUser, nil
 }
 
-func CreateUser(user users.UserDTO) (*users.UserDTO, *errors.RestError) {
+func (s *usersService) CreateUser(user users.UserDTO) (*users.UserDTO, *errors.RestError) {
 	if err := user.TreatmentAndValidate(); err != nil {
 		return nil, err
 	}

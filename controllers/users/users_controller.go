@@ -20,7 +20,7 @@ func Get(c *gin.Context) {
 		return
 	}
 
-	result, getErr := services.GetUser(userId)
+	result, getErr := services.UsersService.GetUser(userId)
 	if getErr != nil {
 		c.JSON(getErr.Status, getErr)
 		return
@@ -37,7 +37,7 @@ func Search(c *gin.Context) {
 		return
 	}
 
-	users, err := services.Search(status)
+	users, err := services.UsersService.SearchUser(status)
 	if err != nil {
 		c.JSON(err.Status, err)
 		return
@@ -52,7 +52,7 @@ func Delete(c *gin.Context) {
 		c.JSON(err.Status, err)
 	}
 
-	if errDelete := services.DeleteUser(userId); errDelete != nil {
+	if errDelete := services.UsersService.DeleteUser(userId); errDelete != nil {
 		c.JSON(errDelete.Status, errDelete)
 		return
 	}
@@ -90,7 +90,7 @@ func Update(c *gin.Context) {
 		}
 	}
 
-	result, saveErr := services.UpdateUser(isPartial, user)
+	result, saveErr := services.UsersService.UpdateUser(isPartial, user)
 	if saveErr != nil {
 		c.JSON(saveErr.Status, saveErr)
 		return
@@ -110,7 +110,7 @@ func Create(c *gin.Context) {
 	user.Status = users.STATUS_ACTIVE
 	user.Password = crypto_utils.GetSha256(user.Password)
 	user.CreatedAt = date_utils.GetNowDbFormat()
-	result, saveErr := services.CreateUser(user)
+	result, saveErr := services.UsersService.CreateUser(user)
 	if saveErr != nil {
 		c.JSON(saveErr.Status, saveErr)
 		return
