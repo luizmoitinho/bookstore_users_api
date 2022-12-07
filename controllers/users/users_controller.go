@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/luizmoitinho/bookstore_users_api/domain/users"
 	"github.com/luizmoitinho/bookstore_users_api/services"
+	"github.com/luizmoitinho/bookstore_users_api/util/crypto_utils"
 	"github.com/luizmoitinho/bookstore_users_api/util/date_utils"
 	"github.com/luizmoitinho/bookstore_users_api/util/errors"
 )
@@ -25,7 +26,7 @@ func Get(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, result)
+	c.JSON(http.StatusOK, result.Marshall(isPublicRequest(c)))
 }
 
 func Search(c *gin.Context) {
@@ -42,8 +43,7 @@ func Search(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, users)
-
+	c.JSON(http.StatusOK, users.Marshall(isPublicRequest(c)))
 }
 
 func Delete(c *gin.Context) {
@@ -96,7 +96,27 @@ func Update(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, result)
+	c.JSON(http.StatusOK, result.Marshall(isPublicRequest(c)))
+}
+
+func Create(c *gin.Context) {
+	var user users.UserDTO
+	if err := c.ShouldBindJSON(&user); err != nil {
+		restErr := errors.NewBadRequestError("invalid json body")
+		c.JSON(restErr.Status, restErr)
+		return
+	}
+
+	user.Status = users.STATUS_ACTIVE
+	user.Password = crypto_utils.GetSha256(user.Password)
+	user.CreatedAt = date_utils.GetNowDbFormat()
+	result, saveErr := services.CreateUser(user)
+	if saveErr != nil {
+		c.JSON(saveErr.Status, saveErr)
+		return
+	}
+
+	c.JSON(http.StatusCreated, result.Marshall(isPublicRequest(c)))
 }
 
 func getUserIdParams(c *gin.Context) (int64, *errors.RestError) {
@@ -109,21 +129,6 @@ func getUserIdParams(c *gin.Context) (int64, *errors.RestError) {
 	return userId, nil
 }
 
-func Create(c *gin.Context) {
-	var user users.UserDTO
-	if err := c.ShouldBindJSON(&user); err != nil {
-		restErr := errors.NewBadRequestError("invalid json body")
-		c.JSON(restErr.Status, restErr)
-		return
-	}
-
-	user.Status = users.STATUS_ACTIVE
-	user.CreatedAt = date_utils.GetNowDbFormat()
-	result, saveErr := services.CreateUser(user)
-	if saveErr != nil {
-		c.JSON(saveErr.Status, saveErr)
-		return
-	}
-
-	c.JSON(http.StatusCreated, result)
+func isPublicRequest(c *gin.Context) bool {
+	return c.GetHeader("x-public") == "true"
 }
