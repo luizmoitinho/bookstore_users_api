@@ -19,8 +19,10 @@ type UserDTO struct {
 	Email     string `json:"email"`
 	CreatedAt string `json:"created_at"`
 	Status    string `json:"status"`
-	Password  string `json:"password"`
+	Password  string `json:"-"`
 }
+
+type Users []UserDTO
 
 func (u *UserDTO) TreatmentAndValidate() *errors.RestError {
 	u.FirstName = strings.TrimSpace(u.FirstName)

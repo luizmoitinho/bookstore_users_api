@@ -13,7 +13,7 @@ func GetUser(userId int64) (*users.UserDTO, *errors.RestError) {
 	return result, nil
 }
 
-func Search(status string) ([]users.UserDTO, *errors.RestError) {
+func Search(status string) (users.Users, *errors.RestError) {
 	user := users.UserDTO{}
 	return user.FindByStatus(status)
 }
