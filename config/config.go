@@ -1,11 +1,11 @@
 package config
 
 import (
-	"log"
 	"os"
 	"strconv"
 
 	"github.com/joho/godotenv"
+	"github.com/luizmoitinho/bookstore_users_api/logger"
 )
 
 var Propertie Properties
@@ -33,7 +33,7 @@ func Load(path string) {
 	var err error
 
 	if err = godotenv.Load(path); err != nil {
-		log.Fatal("config.Load(): ", err)
+		logger.Error("config.Load(): ", err)
 	}
 
 	Propertie.API_DATE_LAYOUT = os.Getenv("API_DATE_LAYOUT")
@@ -43,7 +43,7 @@ func Load(path string) {
 	Propertie.ENV = os.Getenv("ENV")
 	if Propertie.PORT, err = strconv.Atoi(os.Getenv("PORT")); err != nil {
 		Propertie.PORT = 8080
-		log.Printf("cannot convert PORT at .env: %v", err)
+		logger.Error("cannot convert PORT at .env: %v", err)
 	}
 
 	//mysql

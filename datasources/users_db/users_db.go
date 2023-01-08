@@ -3,10 +3,10 @@ package users_db
 import (
 	"database/sql"
 	"fmt"
-	"log"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/luizmoitinho/bookstore_users_api/config"
+	"github.com/luizmoitinho/bookstore_users_api/logger"
 )
 
 const (
@@ -31,6 +31,7 @@ func Connect() MySQL {
 		config.Propertie.DATABASE.COLLECTION,
 	))
 	if err != nil {
+		logger.Error("error when trying connect to database", err)
 		panic(err)
 	}
 
@@ -38,6 +39,6 @@ func Connect() MySQL {
 		panic(err)
 	}
 
-	log.Println("database succesfully connected connected")
+	logger.Info("database succesfully connected connected")
 	return _mysql
 }

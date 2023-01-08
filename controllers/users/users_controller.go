@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/luizmoitinho/bookstore_users_api/domain/users"
+	"github.com/luizmoitinho/bookstore_users_api/logger"
 	"github.com/luizmoitinho/bookstore_users_api/services"
 	"github.com/luizmoitinho/bookstore_users_api/util/crypto_utils"
 	"github.com/luizmoitinho/bookstore_users_api/util/date_utils"
@@ -16,6 +17,7 @@ import (
 func Get(c *gin.Context) {
 	userId, err := getUserIdParams(c)
 	if err != nil {
+		logger.Error("error during get user id params at get route", errors.NewError(err.Error))
 		c.JSON(err.Status, err)
 		return
 	}
@@ -32,6 +34,7 @@ func Get(c *gin.Context) {
 func Search(c *gin.Context) {
 	status := c.Query("status")
 	if strings.TrimSpace(status) == "" {
+		logger.Error("status parameter is not valid", nil)
 		err := errors.NewBadRequestError("status parameter is not valid")
 		c.JSON(err.Status, err)
 		return
@@ -49,6 +52,7 @@ func Search(c *gin.Context) {
 func Delete(c *gin.Context) {
 	userId, err := getUserIdParams(c)
 	if err != nil {
+		logger.Error("error during get user id params at delete route", errors.NewError(err.Error))
 		c.JSON(err.Status, err)
 	}
 
@@ -65,12 +69,14 @@ func Update(c *gin.Context) {
 
 	userId, err := getUserIdParams(c)
 	if err != nil {
+		logger.Error("error during get user id params at update route", errors.NewError(err.Error))
 		c.JSON(err.Status, err)
 		return
 	}
 
 	var user users.UserDTO
 	if err := c.ShouldBindJSON(&user); err != nil {
+		logger.Error("invalid json body", err)
 		restErr := errors.NewBadRequestError("invalid json body")
 		c.JSON(restErr.Status, restErr)
 		return
@@ -80,11 +86,13 @@ func Update(c *gin.Context) {
 	if !isPartial {
 		errTreatment := user.TreatmentAndValidate()
 		if errTreatment != nil {
+			logger.Error("error when trying update user at treatment and validate user", errors.NewError(errTreatment.Error))
 			c.JSON(errTreatment.Status, errTreatment)
 			return
 		}
 		if user.FirstName == "" || user.LastName == "" {
-			err := errors.NewBadRequestError("fist name or last name not be empty")
+			logger.Error("error when trying update user", errors.NewError("fist name or last name not be empty"))
+			err := errors.NewBadRequestError("first name or last name not be empty")
 			c.JSON(err.Status, err)
 			return
 		}
@@ -102,6 +110,7 @@ func Update(c *gin.Context) {
 func Create(c *gin.Context) {
 	var user users.UserDTO
 	if err := c.ShouldBindJSON(&user); err != nil {
+		logger.Error("invalid json body", err)
 		restErr := errors.NewBadRequestError("invalid json body")
 		c.JSON(restErr.Status, restErr)
 		return
@@ -112,6 +121,7 @@ func Create(c *gin.Context) {
 	user.CreatedAt = date_utils.GetNowDbFormat()
 	result, saveErr := services.UsersService.CreateUser(user)
 	if saveErr != nil {
+		logger.Error("error when creating a new user", errors.NewError(saveErr.Error))
 		c.JSON(saveErr.Status, saveErr)
 		return
 	}
@@ -122,8 +132,10 @@ func Create(c *gin.Context) {
 func getUserIdParams(c *gin.Context) (int64, *errors.RestError) {
 	userId, userErr := strconv.ParseInt(c.Param("user_id"), 10, 64)
 	if userErr != nil {
+		logger.Error("user id should be a number", userErr)
 		return 0, errors.NewBadRequestError("user id should be a number")
 	} else if userId <= 0 {
+		logger.Error("error when trying get user id params", errors.NewError("user id should be more than zero"))
 		return 0, errors.NewBadRequestError("user id should be more than zero")
 	}
 	return userId, nil
