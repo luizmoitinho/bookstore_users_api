@@ -17,6 +17,7 @@ type usersServiceInterface interface {
 	DeleteUser(int64) *errors.RestError
 	UpdateUser(bool, users.UserDTO) (*users.UserDTO, *errors.RestError)
 	CreateUser(users.UserDTO) (*users.UserDTO, *errors.RestError)
+	Authenticate(users.Login) (*users.UserDTO, *errors.RestError)
 }
 
 func (s *usersService) GetUser(userId int64) (*users.UserDTO, *errors.RestError) {
@@ -30,6 +31,18 @@ func (s *usersService) GetUser(userId int64) (*users.UserDTO, *errors.RestError)
 func (s *usersService) SearchUser(status string) (users.Users, *errors.RestError) {
 	user := users.UserDTO{}
 	return user.FindByStatus(status)
+}
+
+func (s *usersService) Authenticate(login users.Login) (*users.UserDTO, *errors.RestError) {
+	user := users.UserDTO{Email: login.Email, Password: login.Password}
+	if err := user.TreatmentAndValidate(); err != nil {
+		return nil, err
+	}
+
+	if err := user.FindByEmailAndPassword(); err != nil {
+		return nil, err
+	}
+	return &user, nil
 }
 
 func (s *usersService) DeleteUser(userId int64) *errors.RestError {

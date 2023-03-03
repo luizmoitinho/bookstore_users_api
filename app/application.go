@@ -11,6 +11,6 @@ func StartApplicaton() {
 	logger.Info("mapping the api routes")
 	app.MapRoutes()
 
-	logger.Info("running into port 8080")
-	app.Run(":8080")
+	logger.Info("running into port 8081")
+	app.Run(":8081")
 }

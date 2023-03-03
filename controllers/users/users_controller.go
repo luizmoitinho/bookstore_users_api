@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/luizmoitinho/bookstore_oauth/oauth"
 	"github.com/luizmoitinho/bookstore_users_api/domain/users"
 	"github.com/luizmoitinho/bookstore_users_api/logger"
 	"github.com/luizmoitinho/bookstore_users_api/services"
@@ -15,6 +16,17 @@ import (
 )
 
 func Get(c *gin.Context) {
+	if err := oauth.Authenticate(c.Request); err != nil {
+		c.JSON(err.Status, err)
+		return
+	}
+
+	if callerId := oauth.GetCallerId(c.Request); callerId == 0 {
+		err := errors.NewUnauthorizedError("resource not available")
+		c.JSON(err.Status, err)
+		return
+	}
+
 	userId, err := getUserIdParams(c)
 	if err != nil {
 		logger.Error("error during get user id params at get route", errors.NewError(err.Error))
@@ -22,13 +34,17 @@ func Get(c *gin.Context) {
 		return
 	}
 
-	result, getErr := services.UsersService.GetUser(userId)
+	user, getErr := services.UsersService.GetUser(userId)
 	if getErr != nil {
 		c.JSON(getErr.Status, getErr)
 		return
 	}
 
-	c.JSON(http.StatusOK, result.Marshall(isPublicRequest(c)))
+	if oauth.GetCallerId(c.Request) == user.Id {
+		c.JSON(http.StatusOK, user.Marshall(false))
+		return
+	}
+	c.JSON(http.StatusOK, user.Marshall(oauth.IsPublic(c.Request)))
 }
 
 func Search(c *gin.Context) {
@@ -46,7 +62,7 @@ func Search(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, users.Marshall(isPublicRequest(c)))
+	c.JSON(http.StatusOK, users.Marshall(oauth.IsPublic(c.Request)))
 }
 
 func Delete(c *gin.Context) {
@@ -104,7 +120,7 @@ func Update(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, result.Marshall(isPublicRequest(c)))
+	c.JSON(http.StatusOK, result.Marshall(oauth.IsPublic(c.Request)))
 }
 
 func Create(c *gin.Context) {
@@ -126,7 +142,24 @@ func Create(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, result.Marshall(isPublicRequest(c)))
+	c.JSON(http.StatusCreated, result.Marshall(oauth.IsPublic(c.Request)))
+}
+
+func Authenticate(c *gin.Context) {
+	var login users.Login
+	if err := c.ShouldBindJSON(&login); err != nil {
+		restError := errors.NewBadRequestError("invalid json body")
+		c.JSON(restError.Status, restError)
+		return
+	}
+
+	login.Password = crypto_utils.GetSha256(login.Password)
+	user, err := services.UsersService.Authenticate(login)
+	if err != nil {
+		c.JSON(err.Status, err)
+		return
+	}
+	c.JSON(http.StatusCreated, user.Marshall(oauth.IsPublic(c.Request)))
 }
 
 func getUserIdParams(c *gin.Context) (int64, *errors.RestError) {
@@ -139,8 +172,4 @@ func getUserIdParams(c *gin.Context) (int64, *errors.RestError) {
 		return 0, errors.NewBadRequestError("user id should be more than zero")
 	}
 	return userId, nil
-}
-
-func isPublicRequest(c *gin.Context) bool {
-	return c.GetHeader("x-public") == "true"
 }

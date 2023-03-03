@@ -19,7 +19,7 @@ type UserDTO struct {
 	Email     string `json:"email"`
 	CreatedAt string `json:"created_at"`
 	Status    string `json:"status"`
-	Password  string `json:"-"`
+	Password  string `json:"password"`
 }
 
 type Users []UserDTO
