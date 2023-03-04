@@ -4,7 +4,7 @@ import (
 	"net/mail"
 	"strings"
 
-	"github.com/luizmoitinho/bookstore_users_api/util/errors"
+	"github.com/luizmoitinho/bookstore_utils/rest_errors"
 )
 
 const (
@@ -24,20 +24,20 @@ type UserDTO struct {
 
 type Users []UserDTO
 
-func (u *UserDTO) TreatmentAndValidate() *errors.RestError {
+func (u *UserDTO) TreatmentAndValidate() *rest_errors.RestError {
 	u.FirstName = strings.TrimSpace(u.FirstName)
 	u.LastName = strings.TrimSpace(u.LastName)
 	u.Email = strings.TrimSpace(strings.ToLower(u.Email))
 	u.Password = strings.TrimSpace(u.Password)
 
 	if u.Email == "" {
-		return errors.NewBadRequestError("email address not be empty")
+		return rest_errors.NewBadRequestError("email address not be empty")
 	} else if !ValidEmail(u.Email) {
-		return errors.NewBadRequestError("email address is not valid")
+		return rest_errors.NewBadRequestError("email address is not valid")
 	}
 
 	if u.Password == "" {
-		return errors.NewBadRequestError("password cannot be empty")
+		return rest_errors.NewBadRequestError("password cannot be empty")
 	}
 
 	return nil

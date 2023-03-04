@@ -2,7 +2,7 @@ package services
 
 import (
 	"github.com/luizmoitinho/bookstore_users_api/domain/users"
-	"github.com/luizmoitinho/bookstore_users_api/util/errors"
+	"github.com/luizmoitinho/bookstore_utils/rest_errors"
 )
 
 var (
@@ -12,15 +12,15 @@ var (
 type usersService struct{}
 
 type usersServiceInterface interface {
-	GetUser(int64) (*users.UserDTO, *errors.RestError)
-	SearchUser(string) (users.Users, *errors.RestError)
-	DeleteUser(int64) *errors.RestError
-	UpdateUser(bool, users.UserDTO) (*users.UserDTO, *errors.RestError)
-	CreateUser(users.UserDTO) (*users.UserDTO, *errors.RestError)
-	Authenticate(users.Login) (*users.UserDTO, *errors.RestError)
+	GetUser(int64) (*users.UserDTO, *rest_errors.RestError)
+	SearchUser(string) (users.Users, *rest_errors.RestError)
+	DeleteUser(int64) *rest_errors.RestError
+	UpdateUser(bool, users.UserDTO) (*users.UserDTO, *rest_errors.RestError)
+	CreateUser(users.UserDTO) (*users.UserDTO, *rest_errors.RestError)
+	Authenticate(users.Login) (*users.UserDTO, *rest_errors.RestError)
 }
 
-func (s *usersService) GetUser(userId int64) (*users.UserDTO, *errors.RestError) {
+func (s *usersService) GetUser(userId int64) (*users.UserDTO, *rest_errors.RestError) {
 	result := &users.UserDTO{Id: userId}
 	if err := result.Get(); err != nil {
 		return nil, err
@@ -28,12 +28,12 @@ func (s *usersService) GetUser(userId int64) (*users.UserDTO, *errors.RestError)
 	return result, nil
 }
 
-func (s *usersService) SearchUser(status string) (users.Users, *errors.RestError) {
+func (s *usersService) SearchUser(status string) (users.Users, *rest_errors.RestError) {
 	user := users.UserDTO{}
 	return user.FindByStatus(status)
 }
 
-func (s *usersService) Authenticate(login users.Login) (*users.UserDTO, *errors.RestError) {
+func (s *usersService) Authenticate(login users.Login) (*users.UserDTO, *rest_errors.RestError) {
 	user := users.UserDTO{Email: login.Email, Password: login.Password}
 	if err := user.TreatmentAndValidate(); err != nil {
 		return nil, err
@@ -45,12 +45,12 @@ func (s *usersService) Authenticate(login users.Login) (*users.UserDTO, *errors.
 	return &user, nil
 }
 
-func (s *usersService) DeleteUser(userId int64) *errors.RestError {
+func (s *usersService) DeleteUser(userId int64) *rest_errors.RestError {
 	user := &users.UserDTO{Id: userId}
 	return user.Delete()
 }
 
-func (s *usersService) UpdateUser(isPartial bool, user users.UserDTO) (*users.UserDTO, *errors.RestError) {
+func (s *usersService) UpdateUser(isPartial bool, user users.UserDTO) (*users.UserDTO, *rest_errors.RestError) {
 	currentUser, err := s.GetUser(user.Id)
 	if err != nil {
 		return nil, err
@@ -83,7 +83,7 @@ func (s *usersService) UpdateUser(isPartial bool, user users.UserDTO) (*users.Us
 	return currentUser, nil
 }
 
-func (s *usersService) CreateUser(user users.UserDTO) (*users.UserDTO, *errors.RestError) {
+func (s *usersService) CreateUser(user users.UserDTO) (*users.UserDTO, *rest_errors.RestError) {
 	if err := user.TreatmentAndValidate(); err != nil {
 		return nil, err
 	}

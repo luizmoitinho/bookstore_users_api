@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	"github.com/go-sql-driver/mysql"
-	"github.com/luizmoitinho/bookstore_users_api/util/errors"
+	"github.com/luizmoitinho/bookstore_utils/rest_errors"
 )
 
 const (
@@ -13,21 +13,21 @@ const (
 	DUPLICATED_KEY              = 1062
 )
 
-func ParseError(err error) *errors.RestError {
+func ParseError(err error) *rest_errors.RestError {
 	sqlErr, ok := err.(*mysql.MySQLError)
 	if !ok {
 		if strings.Contains(err.Error(), ERROR_NO_ROWS) {
-			return errors.NewNotFoundError("no registration match given id")
+			return rest_errors.NewNotFoundError("no registration match given id")
 		}
-		return errors.NewInternalServerError("error parsing database response")
+		return rest_errors.NewInternalServerError("error parsing database response", err)
 	}
 
 	switch sqlErr.Number {
 	case DUPLICATED_KEY:
 		if strings.Contains(err.Error(), ERROR_DUPLICATED_USER_EMAIL) {
-			return errors.NewBadRequestError("email already exists")
+			return rest_errors.NewBadRequestError("email already exists")
 		}
-		return errors.NewBadRequestError("duplicated key")
+		return rest_errors.NewBadRequestError("duplicated key")
 	}
-	return errors.NewInternalServerError("error at processing request")
+	return rest_errors.NewInternalServerError("error at processing request", err)
 }
