@@ -6,7 +6,7 @@ import (
 
 	"github.com/luizmoitinho/bookstore_users_api/datasources/users_db"
 	"github.com/luizmoitinho/bookstore_users_api/logger"
-	"github.com/luizmoitinho/bookstore_users_api/util/mysql_utils"
+	"github.com/luizmoitinho/bookstore_utils/mysql_utils"
 	"github.com/luizmoitinho/bookstore_utils/rest_errors"
 )
 

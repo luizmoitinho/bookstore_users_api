@@ -10,8 +10,8 @@ import (
 	"github.com/luizmoitinho/bookstore_users_api/domain/users"
 	"github.com/luizmoitinho/bookstore_users_api/logger"
 	"github.com/luizmoitinho/bookstore_users_api/services"
-	"github.com/luizmoitinho/bookstore_users_api/util/crypto_utils"
 	"github.com/luizmoitinho/bookstore_users_api/util/date_utils"
+	"github.com/luizmoitinho/bookstore_utils/crypto_utils"
 	"github.com/luizmoitinho/bookstore_utils/rest_errors"
 )
 
